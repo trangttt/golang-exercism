@@ -1,10 +1,10 @@
 package react
 
 type MCell struct {
-	val int
+	val       int
 	callbacks map[int]func(int)
-	deps []MDepCell
-	reactor *MReactor
+	deps      []MDepCell
+	reactor   *MReactor
 }
 
 type MDepCell struct {
@@ -34,19 +34,19 @@ func (c *MCell) SetValue(newVal int) {
 	c.reactor.oldValues = make(map[*MCell]int)
 }
 
-func (c *MCell) SaveValue(){
+func (c *MCell) SaveValue() {
 	_, exist := c.reactor.oldValues[c]
 	if !exist {
 		// bookkeeping old values
 		c.reactor.oldValues[c] = c.val
 		for _, d := range c.deps {
-				d.SaveValue()
+			d.SaveValue()
 		}
 	}
 
 }
 
-func (c *MCell) UpdateValue(newVal int){
+func (c *MCell) UpdateValue(newVal int) {
 	c.val = newVal
 	for _, d := range c.deps {
 		nv := d.update(newVal)
@@ -78,7 +78,7 @@ func (c *MCell) PerformCallbacks() {
 }
 
 type MCanceler struct {
-	cell *MCell
+	cell  *MCell
 	index int
 }
 
@@ -96,13 +96,12 @@ func (c *MCell) AddDependant(cell MDepCell) {
 	c.deps = append(c.deps, cell)
 }
 
-
 func (r *MReactor) NewCell(v int) *MCell {
 	return &MCell{
-		val: v,
-		deps: []MDepCell{},
-		callbacks:  make(map[int]func(int)),
-		reactor: r,
+		val:       v,
+		deps:      []MDepCell{},
+		callbacks: make(map[int]func(int)),
+		reactor:   r,
 	}
 }
 
@@ -127,7 +126,7 @@ func (r *MReactor) CreateCompute1(c Cell, compute func(int) int) ComputeCell {
 func (r *MReactor) CreateCompute2(c1 Cell, c2 Cell, compute func(int, int) int) ComputeCell {
 	v := compute(c1.Value(), c2.Value())
 
-	cell :=  r.NewCell(v)
+	cell := r.NewCell(v)
 
 	c1.(*MCell).AddDependant(MDepCell{
 		MCell: cell,
@@ -147,5 +146,5 @@ func (r *MReactor) CreateCompute2(c1 Cell, c2 Cell, compute func(int, int) int) 
 }
 
 func New() Reactor {
-	return Reactor(&MReactor{ oldValues: make(map[*MCell]int)})
+	return Reactor(&MReactor{oldValues: make(map[*MCell]int)})
 }
